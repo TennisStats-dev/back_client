@@ -63,6 +63,7 @@ const getAllPlayerEndedMatches = async (id: string): Promise<Array<IPreMatch & D
 const getDayEndedMatches = async (dateRange: IDateRange): Promise<Array<IMatch & Document> | null> => {
 	try {
 
+		console.log(dateRange)
 			const endedMatches = await Match.find({
 				est_time: { $gt: dateRange.from, $lt: dateRange.to },
 			})
@@ -70,6 +71,8 @@ const getDayEndedMatches = async (dateRange: IDateRange): Promise<Array<IMatch &
 			.populate('court')
 			.populate('home')
 			.populate('away')
+
+
 			
 			return endedMatches
 
@@ -85,6 +88,7 @@ const getPlayerEndedMatches = async (playerApiId: number, dateRange: IDateRange)
 			const playerId = await Player.findOne({api_id: playerApiId}).select({})
 
 			console.log('lo que devuelve al buscar el id del player es: ', playerId)
+			console.log(dateRange)
 
 			const endedMatches = await Match.find({ 
 				$and: [
@@ -107,6 +111,8 @@ const getPlayerEndedMatches = async (playerApiId: number, dateRange: IDateRange)
 			.populate('court')
 			.populate('home')
 			.populate('away')
+
+
 			
 			return endedMatches
 

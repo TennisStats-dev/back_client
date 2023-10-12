@@ -3,7 +3,14 @@ export interface IDateRange {
 	to: Date
 }
 
+export interface IScheduleDateRange {
+	dateRange: {
+		from: Date
+		to: Date
+	}
+}
+
 export interface IReqPlayerMatches {
-	dateRange: IDateRange,
+	dateRange: IDateRange
 	playerApiId: number
 }
