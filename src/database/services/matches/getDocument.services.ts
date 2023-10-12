@@ -6,6 +6,7 @@ import type { IMatch, IPreMatch } from 'types/databaseTypes'
 import Tournament from '@database/models/tournament.model'
 import Court from '@database/models/court.model'
 import { Player } from '@database/models/player.model'
+import type { IDateRange } from 'types/types'
 
 export const dummyValue = {
 	Tournament,
@@ -59,10 +60,10 @@ const getAllPlayerEndedMatches = async (id: string): Promise<Array<IPreMatch & D
 	}
 }
 
-const getDateEndedMatches = async (dateRange: any): Promise<Array<IMatch & Document> | null> => {
+const getDayEndedMatches = async (dateRange: IDateRange): Promise<Array<IMatch & Document> | null> => {
 	try {
-		if (typeof dateRange.from === 'string' && typeof dateRange.to === 'string') {
-			const existingPopulatedMatch = await Match.find({
+
+			const endedMatches = await Match.find({
 				est_time: { $gt: dateRange.from, $lt: dateRange.to },
 			})
 			.populate('tournament')
@@ -70,10 +71,45 @@ const getDateEndedMatches = async (dateRange: any): Promise<Array<IMatch & Docum
 			.populate('home')
 			.populate('away')
 			
-			return existingPopulatedMatch
-		} else {
-			return null
-		}
+			return endedMatches
+
+	} catch (err) {
+		console.log(err)
+		logger.error('Error getting all ended matches')
+		throw new Error('Error getting all ended matches')
+	}
+}
+
+const getPlayerEndedMatches = async (playerApiId: number, dateRange: IDateRange): Promise<Array<IMatch & Document> | null> => {
+	try {
+			const playerId = await Player.findOne({api_id: playerApiId}).select({})
+
+			console.log('lo que devuelve al buscar el id del player es: ', playerId)
+
+			const endedMatches = await Match.find({ 
+				$and: [
+					{
+						$or: [
+							{
+								home: playerId,
+							},
+							{
+								away: playerId,
+							}
+						]
+					},
+					{
+						est_time: { $gt: dateRange.from, $lt: dateRange.to },
+					}
+				]
+			})
+			.populate('tournament')
+			.populate('court')
+			.populate('home')
+			.populate('away')
+			
+			return endedMatches
+
 	} catch (err) {
 		console.log(err)
 		logger.error('Error getting all ended matches')
@@ -84,8 +120,9 @@ const getDateEndedMatches = async (dateRange: any): Promise<Array<IMatch & Docum
 const GET = {
 	getAllPreMatches,
 	getEndedMatch,
-	getDateEndedMatches,
+	getDayEndedMatches,
 	getAllPlayerEndedMatches,
+	getPlayerEndedMatches,
 }
 
 export default GET

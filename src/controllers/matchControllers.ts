@@ -3,17 +3,20 @@ import logger from '@config/logger'
 
 import type { Request, Response } from 'express'
 import type { IMatch, IPreMatch } from 'types/databaseTypes'
+import type { IDateRange, IReqPlayerMatches } from 'types/types'
 
-export const getTodaySchedule = async (req: Request, res: Response): Promise<void> => {
+export const getSchedule = async (
+	req: Request<unknown, unknown, unknown, IDateRange>,
+	res: Response,
+): Promise<void> => {
 	try {
-		console.log('------------------', req)
-		const dateRange = req.query.dateRange
+		const dateRange = req.query
 
 		console.log(dateRange)
 
 		const upcomingMatches = await config.database.services.getters.getAllPreMatches()
 
-		const endedMatches = await config.database.services.getters.getDateEndedMatches(dateRange)
+		const endedMatches = await config.database.services.getters.getDayEndedMatches(dateRange)
 
 		const result: Array<IMatch | IPreMatch> = []
 
@@ -32,6 +35,33 @@ export const getTodaySchedule = async (req: Request, res: Response): Promise<voi
 		}
 
 		res.status(200).send({ result })
+	} catch (error) {
+		logger.error(`Error while trying to get today's schedule`)
+		res.status(400).send(error)
+	}
+}
+
+export const getPlayerEndedMatchesFromDate = async (
+	req: Request<unknown, unknown, unknown, IReqPlayerMatches>,
+	res: Response,
+): Promise<void> => {
+	try {
+		const dateRange = req.query.dateRange
+		const playerApiId = req.query.playerApiId
+
+		const endedMatches = await config.database.services.getters.getPlayerEndedMatches(playerApiId, dateRange)
+
+		if(endedMatches !== null) {
+			console.log(endedMatches)
+		}
+
+		if (endedMatches === null) {
+			res.status(200).send({ message: 'Not matches found' })
+		}
+
+		console.log('PARTIDOOOOOOOOOOOOS \n', endedMatches)
+
+		res.status(200).send({ endedMatches })
 	} catch (error) {
 		logger.error(`Error while trying to get today's schedule`)
 		res.status(400).send(error)

@@ -1,4 +1,4 @@
-import GET from "./getDocument.services";
+import GET from "./matches/getDocument.services";
 
 
 
