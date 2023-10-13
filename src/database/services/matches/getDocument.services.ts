@@ -48,9 +48,11 @@ const getEndedMatch = async (api_id: number): Promise<(IMatch & Document) | null
 	}
 }
 
-const getAllPlayerEndedMatches = async (id: string): Promise<Array<IPreMatch & Document> | null> => {
+const getAllPlayerEndedMatches = async (api_id: number): Promise<Array<IPreMatch & Document> | null> => {
 	try {
-		const existingPopulatedMatch = await Match.find({ $or: [{ home: id }, { away: id }] })
+
+		const playerId = await Player.findOne({api_id}).select({})
+		const existingPopulatedMatch = await Match.find({ $or: [{ home: playerId }, { away: playerId }] })
 
 		return existingPopulatedMatch
 	} catch (err) {
@@ -86,9 +88,6 @@ const getDayEndedMatches = async (dateRange: IDateRange): Promise<Array<IMatch &
 const getPlayerEndedMatches = async (playerApiId: number, dateRange: IDateRange): Promise<Array<IMatch & Document> | null> => {
 	try {
 			const playerId = await Player.findOne({api_id: playerApiId}).select({})
-
-			console.log('lo que devuelve al buscar el id del player es: ', playerId)
-			console.log(dateRange)
 
 			const endedMatches = await Match.find({ 
 				$and: [

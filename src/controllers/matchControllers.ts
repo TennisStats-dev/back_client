@@ -16,25 +16,25 @@ export const getSchedule = async (
 
 		const endedMatches = await config.database.services.getters.getDayEndedMatches(dateRange)
 
-		const result: Array<IMatch | IPreMatch> = []
+		const schedule: Array<IMatch | IPreMatch> = []
 
 		if (upcomingMatches !== null) {
 			console.log('IN PLAY: ', upcomingMatches.filter(match => match.status === 2).length)
 			console.log('NOT STARTED: ', upcomingMatches.filter(match => match.status === 0).length)
 			console.log('OTHER: ', upcomingMatches.filter(match => match.status !== 0 && match.status !== 2).length)
-			result.push(...upcomingMatches)
+			console.log('TOTAL: ', upcomingMatches.length)
+			schedule.push(...upcomingMatches)
 		}
 
 		if (endedMatches !== null) {
-			console.log(endedMatches.length)
-			result.push(...endedMatches)
+			schedule.push(...endedMatches)
 		}
 
-		if (result.length === 0) {
+		if (schedule.length === 0) {
 			res.status(200).send({ message: 'Not matches for that day' })
 		}
 
-		res.status(200).send({ result })
+		res.status(200).send({ result: schedule })
 	} catch (error) {
 		logger.error(`Error while trying to get today's schedule`)
 		res.status(400).send(error)
@@ -57,7 +57,29 @@ export const getPlayerEndedMatchesFromDate = async (
 
 		console.log('PARTIDOOOOOOOOOOOOS \n', endedMatches?.length)
 
-		res.status(200).send({ endedMatches })
+		res.status(200).send({ result: endedMatches })
+	} catch (error) {
+		logger.error(`Error while trying to get today's schedule`)
+		res.status(400).send(error)
+	}
+}
+
+export const getAllPlayerEndedMatches = async (
+	req: Request<unknown, unknown, unknown, {playerApiId: number}>,
+	res: Response,
+): Promise<void> => {
+	try {
+		const playerApiId = req.query.playerApiId
+
+		const endedMatches = await config.database.services.getters.getAllPlayerEndedMatches(playerApiId)
+
+		if (endedMatches === null) {
+			res.status(200).send({ message: 'Not matches found' })
+		}
+
+		console.log('PARTIDOOOOOOOOOOOOS \n', endedMatches?.length)
+
+		res.status(200).send({ result: endedMatches })
 	} catch (error) {
 		logger.error(`Error while trying to get today's schedule`)
 		res.status(400).send(error)
