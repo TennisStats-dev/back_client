@@ -50,9 +50,12 @@ const getEndedMatch = async (api_id: number): Promise<(IMatch & Document) | null
 
 const getAllPlayerEndedMatches = async (api_id: number): Promise<Array<IPreMatch & Document> | null> => {
 	try {
-
-		const playerId = await Player.findOne({api_id}).select({})
+		const playerId = await Player.findOne({ api_id }).select({})
 		const existingPopulatedMatch = await Match.find({ $or: [{ home: playerId }, { away: playerId }] })
+			.populate('tournament')
+			.populate('court')
+			.populate('home')
+			.populate('away')
 
 		return existingPopulatedMatch
 	} catch (err) {
@@ -64,20 +67,16 @@ const getAllPlayerEndedMatches = async (api_id: number): Promise<Array<IPreMatch
 
 const getDayEndedMatches = async (dateRange: IDateRange): Promise<Array<IMatch & Document> | null> => {
 	try {
-
 		console.log(dateRange)
-			const endedMatches = await Match.find({
-				est_time: { $gt: dateRange.from, $lt: dateRange.to },
-			})
+		const endedMatches = await Match.find({
+			est_time: { $gt: dateRange.from, $lt: dateRange.to },
+		})
 			.populate('tournament')
 			.populate('court')
 			.populate('home')
 			.populate('away')
 
-
-			
-			return endedMatches
-
+		return endedMatches
 	} catch (err) {
 		console.log(err)
 		logger.error('Error getting all ended matches')
@@ -85,36 +84,36 @@ const getDayEndedMatches = async (dateRange: IDateRange): Promise<Array<IMatch &
 	}
 }
 
-const getPlayerEndedMatches = async (playerApiId: number, dateRange: IDateRange): Promise<Array<IMatch & Document> | null> => {
+const getPlayerEndedMatches = async (
+	playerApiId: number,
+	dateRange: IDateRange,
+): Promise<Array<IMatch & Document> | null> => {
 	try {
-			const playerId = await Player.findOne({api_id: playerApiId}).select({})
+		const playerId = await Player.findOne({ api_id: playerApiId }).select({})
 
-			const endedMatches = await Match.find({ 
-				$and: [
-					{
-						$or: [
-							{
-								home: playerId,
-							},
-							{
-								away: playerId,
-							}
-						]
-					},
-					{
-						est_time: { $gt: dateRange.from, $lt: dateRange.to },
-					}
-				]
-			})
+		const endedMatches = await Match.find({
+			$and: [
+				{
+					$or: [
+						{
+							home: playerId,
+						},
+						{
+							away: playerId,
+						},
+					],
+				},
+				{
+					est_time: { $gt: dateRange.from, $lt: dateRange.to },
+				},
+			],
+		})
 			.populate('tournament')
 			.populate('court')
 			.populate('home')
 			.populate('away')
 
-
-			
-			return endedMatches
-
+		return endedMatches
 	} catch (err) {
 		console.log(err)
 		logger.error('Error getting all ended matches')
