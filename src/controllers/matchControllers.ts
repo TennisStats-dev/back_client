@@ -20,9 +20,13 @@ export const getSchedule = async (
 		const schedule: Array<IMatch | IPreMatch> = []
 
 		if (upcomingMatches !== null) {
-			console.log('IN PLAY: ', upcomingMatches.filter((match) => match.status === 2).length)
 			console.log('NOT STARTED: ', upcomingMatches.filter((match) => match.status === 0).length)
-			console.log('OTHER: ', upcomingMatches.filter((match) => match.status !== 0 && match.status !== 2).length)
+			console.log('IN PLAY: ', upcomingMatches.filter((match) => match.status === 1).length)
+			console.log('TO BE FIXED: ', upcomingMatches.filter((match) => match.status === 2).length)
+			console.log(
+				'OTHER: ',
+				upcomingMatches.filter((match) => match.status !== 0 && match.status !== 1 && match.status !== 2).length,
+			)
 			console.log('TOTAL: ', upcomingMatches.length)
 			schedule.push(...upcomingMatches)
 		}
@@ -66,13 +70,13 @@ export const getPlayerEndedMatchesFromDate = async (
 }
 
 export const getAllPlayerEndedMatches = async (
-	req: Request<unknown, unknown, unknown, { playerApiId: number }>,
+	req: Request<unknown, unknown, unknown, { playerId: string }>,
 	res: Response,
 ): Promise<void> => {
 	try {
-		const playerApiId = req.query.playerApiId
+		const playerId = req.query.playerId
 
-		const endedMatches = await config.database.services.getters.getAllPlayerEndedMatches(playerApiId)
+		const endedMatches = await config.database.services.getters.getAllPlayerEndedMatches(playerId)
 
 		if (endedMatches === null) {
 			res.status(200).send({ message: 'Not matches found' })

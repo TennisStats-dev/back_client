@@ -48,9 +48,9 @@ const getEndedMatch = async (api_id: number): Promise<(IMatch & Document) | null
 	}
 }
 
-const getAllPlayerEndedMatches = async (api_id: number): Promise<Array<IPreMatch & Document> | null> => {
+const getAllPlayerEndedMatches = async (playerId: string): Promise<Array<IPreMatch & Document> | null> => {
 	try {
-		const playerId = await Player.findOne({ api_id }).select({})
+		// const playerId = await Player.findOne({ api_id }).select({})
 
 		const existingPopulatedMatch = await Match.find({ $or: [{ home: playerId }, { away: playerId }] })
 			.populate('tournament')
